@@ -6,9 +6,9 @@ import pickle
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 image_dir = os.path.join(BASE_DIR, 'images')
+recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 face_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_frontalface_alt2.xml')
-recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 current_id = 0
 label_ids = {}
@@ -31,7 +31,9 @@ for root, dirs, files in os.walk(image_dir):
             # x_train.append(path) # verify this image, turn into a NUMPY array
             # y_labels.append(path) # some number
             pil_image = Image.open(path).convert('L')
-            image_array = np.array(pil_image, 'uint8')
+            size = (550, 550)
+            final_image = pil_image.resize(size, Image.ANTIALIAS)
+            image_array = np.array(final_image, 'uint8')
             print(image_array)
             faces = face_cascade.detectMultiScale(image_array, scaleFactor=1.5, minNeighbors=5)
             for (x, y, w, h) in faces:
@@ -42,10 +44,9 @@ for root, dirs, files in os.walk(image_dir):
 print('x_train :', x_train)
 print('y_labels : ', y_labels)
 
-#pickle?
+# pickle?
 with open('labels.pickle', 'wb') as f:
     pickle.dump(label_ids, f)
 
 recognizer.train(x_train, np.array(y_labels))
 recognizer.save('trainer.yml')
-
